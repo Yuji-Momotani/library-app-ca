@@ -10,19 +10,19 @@ import (
 
 type ID string
 
-func NewID(v string) (ID, error) {
-	if v != "" {
-		return ID(v), nil
-	}
-
+func NewID() (ID, error) {
 	ms := ulid.Timestamp(time.Now())
 	id, err := ulid.New(ms, rand.Reader)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to ulid new %w", err)
 	}
 	fmt.Print(id)
 
 	return ID(id.String()), nil
+}
+
+func IDFromULID(id ulid.ULID) ID {
+	return ID(id.String())
 }
 
 func (v ID) String() string {
