@@ -1,7 +1,6 @@
 package userdm
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -11,38 +10,32 @@ type Email struct {
 	value string
 }
 
-var ErrInvalidEmailFormat = errors.New("invalid email format")
-
-func NewEmail(v string) (*Email, error) {
-	match, err := regexp.MatchString(
-		`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`,
-		v,
-	)
+func NewEmail(value string) (*Email, error) {
+	// メールアドレスのフォーマットを検証
+	matched, err := regexp.MatchString(`^[^\s@]+@[^\s@]+\.[^\s@]+$`, value)
 	if err != nil {
-		return nil, fmt.Errorf("メールアドレスがフォーマット検証に失敗しました: %w", err)
+		return nil, fmt.Errorf("メールアドレスフォーマットの検証に失敗: %w", err)
 	}
-	if !match {
-		return nil, fmt.Errorf(
-			"無効なメールアドレスフォーマット:%w :%s",
-			ErrInvalidEmailFormat,
-			v)
+	if !matched {
+		return nil, fmt.Errorf("無効なメールアドレスフォーマット: %s", value)
 	}
 
-	return &Email{
-		value: v,
-	}, nil
+	return &Email{value: value}, nil
 }
 
-func (v *Email) Value() string {
-	return v.value
+func (e *Email) Value() string {
+	return e.value
 }
 
-func (v *Email) Domain() string {
-	parts := strings.Split(v.value, "@")
-
-	return parts[1]
+func (e *Email) Domain() string {
+	parts := strings.Split(e.value, "@")
+	return parts[1] // @以降の部分
 }
 
-func (v *Email) Equal(other Email) bool {
-	return v.value == other.value
+func (e *Email) Equals(other *Email) bool {
+	return e.value == other.value
+}
+
+func (e *Email) String() string {
+	return e.value
 }

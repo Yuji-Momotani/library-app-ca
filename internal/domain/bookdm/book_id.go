@@ -1,35 +1,34 @@
 package bookdm
 
 import (
-	"fmt"
-
 	"github.com/Yuji-Momotani/library-app-ca/internal/domain/shared"
 	"github.com/oklog/ulid/v2"
 )
 
+// BookID は書籍エンティティのID
+// なぜ型エイリアス？shared.IDの機能を継承しつつ、型安全性を確保
 type BookID shared.ID
 
-func NewBookID() (BookID, error) {
-	id, err := shared.NewID()
-	if err != nil {
-		return BookID(""), fmt.Errorf("failed to shared newid:%w", err)
-	}
-	return BookID(id), nil
+// NewBookID は新しいBookIDを生成
+func NewBookID() BookID {
+	return BookID(shared.NewID())
 }
 
+// BookIDFromString はULID文字列からBookIDを復元する（永続化層・リクエスト用）
 func BookIDFromString(s string) (BookID, error) {
-	ulid, err := ulid.Parse(s)
+	_, err := ulid.Parse(s)
 	if err != nil {
 		return BookID(""), err
 	}
-
-	return BookID(shared.IDFromULID(ulid)), nil
+	return BookID(shared.ID(s)), nil
 }
 
+// Value は文字列としての値を返す
 func (id BookID) Value() string {
-	return shared.ID(id).String()
+	return shared.ID(id).Value()
 }
 
-func (id BookID) Equal(v BookID) bool {
-	return shared.ID(id).Equal(shared.ID(v))
+// Equals は値オブジェクトの等価性を比較
+func (id BookID) Equals(other BookID) bool {
+	return shared.ID(id).Equals(shared.ID(other))
 }

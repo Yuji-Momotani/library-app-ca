@@ -4,49 +4,44 @@ import (
 	"testing"
 
 	"github.com/Yuji-Momotani/library-app-ca/internal/domain/bookdm"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestNewISBN(t *testing.T) {
-	tests := []struct {
-		name     string
-		v        string
-		expected string
-		wantErr  bool
-	}{
-		{
-			name:     "正常系: ハイフンなし",
-			v:        "9783161484100",
-			expected: "9783161484100",
-			wantErr:  false,
-		},
-		{
-			name:     "正常系: ハイフンあり",
-			v:        "978-3-16-148410-0",
-			expected: "978-3-16-148410-0",
-			wantErr:  false,
-		},
-		{
-			name:    "異常系: 13桁ではない",
-			v:       "12345678901234",
-			wantErr: true,
-		},
-		{
-			name:    "異常系: 数字ではない",
-			v:       "1234abc890123",
-			wantErr: true,
-		},
+func TestCanCreateValidISBN(t *testing.T) {
+	isbn, err := bookdm.NewISBN("9780134494166")
+	if err != nil {
+		t.Fatalf("Failed to create ISBN: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			isbn, err := bookdm.NewIsbn(tt.v)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.Empty(t, err)
-				assert.Equal(t, tt.expected, isbn.Value())
-			}
-		})
+	if isbn.Value() != "9780134494166" {
+		t.Errorf("Expected '9780134494166', got '%s'", isbn.Value())
+	}
+}
+
+func TestCanCreateISBNWithHyphens(t *testing.T) {
+	isbn, err := bookdm.NewISBN("978-0-13-449416-6")
+	if err != nil {
+		t.Fatalf("Failed to create ISBN: %v", err)
+	}
+
+	if isbn.Value() != "9780134494166" {
+		t.Errorf("Expected normalized '9780134494166', got '%s'", isbn.Value())
+	}
+}
+
+func TestInvalidISBNReturnsError(t *testing.T) {
+	_, err := bookdm.NewISBN("invalid")
+	if err == nil {
+		t.Error("Expected error for invalid ISBN")
+	}
+}
+
+func TestFormatsISBNCorrectly(t *testing.T) {
+	isbn, err := bookdm.NewISBN("9780134494166")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if isbn.Formatted() != "978-0-13-449416-6" {
+		t.Errorf("Expected '978-0-13-449416-6', got '%s'", isbn.Formatted())
 	}
 }

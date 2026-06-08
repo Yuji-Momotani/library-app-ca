@@ -1,41 +1,21 @@
 package loandm
 
-import (
-	"fmt"
+import "github.com/Yuji-Momotani/library-app-ca/internal/domain/shared"
 
-	"github.com/Yuji-Momotani/library-app-ca/internal/domain/shared"
-	"github.com/oklog/ulid/v2"
-)
-
+// LoanID は貸出エンティティのID
 type LoanID shared.ID
 
-func NewLoanID() (*LoanID, error) {
-	id, err := shared.NewID()
-	if err != nil {
-		return nil, fmt.Errorf("failed to shared NewID: %w", err)
-	}
-
-	lID := LoanID(id)
-
-	return &lID, nil
+// NewLoanID は新しいLoanIDを生成
+func NewLoanID() LoanID {
+	return LoanID(shared.NewID())
 }
 
-func LoanIDFromString(v string) (*LoanID, error) {
-	sid, err := ulid.Parse(v)
-	if err != nil {
-		return nil, fmt.Errorf("failed to ulid parse:%w", err)
-	}
-
-	id := shared.IDFromULID(sid)
-	LoanID := LoanID(id)
-
-	return &LoanID, nil
+// Value は文字列としての値を返す
+func (id LoanID) Value() string {
+	return shared.ID(id).Value()
 }
 
-func (v LoanID) Value() string {
-	return shared.ID(v).String()
-}
-
-func (v LoanID) Equal(other LoanID) bool {
-	return shared.ID(v).Equal(shared.ID(other))
+// Equals は値オブジェクトの等価性を比較
+func (id LoanID) Equals(other LoanID) bool {
+	return shared.ID(id).Equals(shared.ID(other))
 }

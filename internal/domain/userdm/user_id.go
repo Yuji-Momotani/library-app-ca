@@ -1,41 +1,21 @@
 package userdm
 
-import (
-	"fmt"
+import "github.com/Yuji-Momotani/library-app-ca/internal/domain/shared"
 
-	"github.com/Yuji-Momotani/library-app-ca/internal/domain/shared"
-	"github.com/oklog/ulid/v2"
-)
-
+// UserID はユーザーエンティティのID
 type UserID shared.ID
 
-func NewID() (*UserID, error) {
-	id, err := shared.NewID()
-	if err != nil {
-		return nil, err
-	}
-
-	userID := UserID(id)
-
-	return &userID, nil
+// NewUserID は新しいUserIDを生成
+func NewUserID() UserID {
+	return UserID(shared.NewID())
 }
 
-func UserIDFromString(v string) (*UserID, error) {
-	id, err := ulid.Parse(v)
-	if err != nil {
-		return nil, fmt.Errorf("failed to ulid parse:%w", err)
-	}
-
-	sid := shared.IDFromULID(id)
-	uid := UserID(sid)
-
-	return &uid, nil
+// Value は文字列としての値を返す
+func (id UserID) Value() string {
+	return shared.ID(id).Value()
 }
 
-func (v UserID) Value() string {
-	return shared.ID(v).String()
-}
-
-func (v UserID) Equals(other UserID) bool {
-	return shared.ID(v).Equal(shared.ID(other))
+// Equals は値オブジェクトの等価性を比較
+func (id UserID) Equals(other UserID) bool {
+	return shared.ID(id).Equals(shared.ID(other))
 }

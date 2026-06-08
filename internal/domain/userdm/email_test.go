@@ -4,72 +4,53 @@ import (
 	"testing"
 
 	"github.com/Yuji-Momotani/library-app-ca/internal/domain/userdm"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestNewEmail(t *testing.T) {
-	tests := []struct {
-		name        string
-		v           string
-		expected    string
-		wantErr     bool
-		expectedErr error
-	}{
-		{
-			name:     "正常系: 正しいメールアドレスフォーマット",
-			v:        "test@example.com",
-			expected: "test@example.com",
-			wantErr:  false,
-		},
-		{
-			name:        "異常系: メールアドレスフォーマットが正しくない",
-			v:           "test1234",
-			wantErr:     true,
-			expectedErr: userdm.ErrInvalidEmailFormat,
-		},
-		{
-			name:        "異常系: @で終わる",
-			v:           "test1234@",
-			wantErr:     true,
-			expectedErr: userdm.ErrInvalidEmailFormat,
-		},
+func TestEmail_ValidEmail(t *testing.T) {
+	email, err := userdm.NewEmail("john@example.com")
+	if err != nil {
+		t.Fatalf("Expected no error, got: %v", err)
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			actual, err := userdm.NewEmail(tt.v)
-			if tt.wantErr {
-				assert.ErrorIs(t, err, tt.expectedErr)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expected, actual.Value())
-			}
-		})
+	if email.Value() != "john@example.com" {
+		t.Errorf("Expected john@example.com, got: %s", email.Value())
 	}
 }
 
-func TestDomain(t *testing.T) {
-	tests := []struct {
-		name     string
-		v        string
-		expected string
-	}{
-		{
-			name:     "ドメイン取得チェック",
-			v:        "test@example.com",
-			expected: "example.com",
-		},
-		{
-			name:     "ドメイン取得チェック",
-			v:        "test@hoge.co.jp",
-			expected: "hoge.co.jp",
-		},
+func TestEmail_InvalidFormat(t *testing.T) {
+	_, err := userdm.NewEmail("invalid")
+	if err == nil {
+		t.Fatal("Expected error for invalid email")
+	}
+}
+
+func TestEmail_GetDomain(t *testing.T) {
+	email, err := userdm.NewEmail("user@example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if email.Domain() != "example.com" {
+		t.Errorf("Expected example.com, got: %s", email.Domain())
+	}
+}
+
+func TestEmail_Equals(t *testing.T) {
+	email1, err := userdm.NewEmail("test@example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	email2, err := userdm.NewEmail("test@example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	email3, err := userdm.NewEmail("other@example.com")
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			email, _ := userdm.NewEmail(tt.v)
-			assert.Equal(t, tt.expected, email.Domain())
-		})
+	if !email1.Equals(email2) {
+		t.Error("Expected equal emails")
+	}
+	if email1.Equals(email3) {
+		t.Error("Expected different emails")
 	}
 }

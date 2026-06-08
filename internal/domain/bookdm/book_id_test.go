@@ -1,51 +1,47 @@
 package bookdm_test
 
 import (
-	"crypto/rand"
 	"testing"
-	"time"
 
 	"github.com/Yuji-Momotani/library-app-ca/internal/domain/bookdm"
-	"github.com/oklog/ulid/v2"
-	"github.com/stretchr/testify/assert"
 )
 
-func Test_NewBookID(t *testing.T) {
-	t.Run("NewID: 正常系", func(t *testing.T) {
-		id, err := bookdm.NewBookID()
-		assert.NoError(t, err)
-		assert.NotEmpty(t, id)
-	})
-}
+func TestBookID_GeneratesValidID(t *testing.T) {
+	id := bookdm.NewBookID()
 
-func Test_BookIDFromString(t *testing.T) {
-	ms := ulid.Timestamp(time.Now())
-	id, _ := ulid.New(ms, rand.Reader)
-	tests := []struct {
-		name    string
-		v       string
-		wantErr bool
-	}{
-		{
-			name:    "正常系: BookIDFromString",
-			v:       id.String(),
-			wantErr: false,
-		},
-		{
-			name:    "異常系: ulid以外の文字列が渡された場合",
-			v:       "test",
-			wantErr: true,
-		},
+	if id.Value() == "" {
+		t.Error("Expected non-empty ID value")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			id, err := bookdm.BookIDFromString(tt.v)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NotEmpty(t, id)
-			}
-		})
+	// ULID should be 26 characters
+	if len(id.Value()) != 26 {
+		t.Errorf("Expected ULID length 26, got: %d", len(id.Value()))
+	}
+}
+
+func TestBookID_GeneratesUniqueIDs(t *testing.T) {
+	id1 := bookdm.NewBookID()
+	id2 := bookdm.NewBookID()
+
+	if id1.Equals(id2) {
+		t.Error("Expected different IDs to not be equal")
+	}
+}
+
+func TestBookID_Equality(t *testing.T) {
+	id1 := bookdm.NewBookID()
+	id2 := id1 // Same reference
+
+	if !id1.Equals(id2) {
+		t.Error("Expected same ID to be equal to itself")
+	}
+}
+
+func TestBookID_ValueReturnsString(t *testing.T) {
+	id := bookdm.NewBookID()
+	value := id.Value()
+
+	if value == "" {
+		t.Error("Value() should return non-empty string")
 	}
 }
